@@ -8,9 +8,12 @@ import csv
 
 
 
+genres = ['blues', 'classical', 'country', 'disco', 'hiphop', \
+				  'jazz', 'metal', 'pop', 'reggae', 'rock']
+
 
 GeneratePlots = False
-c = csv.writer(open("AllAudio_AllFeatures.csv", "w"))
+c = csv.writer(open("AllDataFeatures_trimmed.csv", "w"))
 
 
 # Normalizing the spectral centroid for visualisation
@@ -20,6 +23,11 @@ def normalize(x, axis=0):
 
 def GenerateCSVs(audio_path):
 	x, sr = librosa.load(audio_path)
+
+	# get the genre name out of the audio path
+	a,genre_name,d = audio_path.split('/')
+	genre_index = int(genres.index(genre_name))
+
 
 	# 1. Calculate the number of zero crossings
 	zero_crossings = librosa.zero_crossings(x, pad=False)
@@ -39,13 +47,27 @@ def GenerateCSVs(audio_path):
 	hop_length = 512
 	chromagram = librosa.feature.chroma_stft(x, sr=sr, hop_length=hop_length)
 
+	# trim all of the matrices to be a smaller length (to compensate for minor
+	# size differences)
+	small_len = 1285
 
-	# # for now, save away just the number of zero crossings
-	# with open('test.csv') as csvfile:
-	#     spamwriter = csv.writer(csvfile, delimiter=' ',
-	#                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
-	# nextRow = np.hstack([audio_path, sumZeroCrossings, spectral_centroids])
-	nextRow = np.hstack([audio_path, sumZeroCrossings, spectral_centroids,
+	spectral_centroids = spectral_centroids[:small_len]
+	spectral_rolloff   = spectral_rolloff[:small_len]
+	mfccs              = mfccs[:, :small_len]
+	chromagram 				 = chromagram[:, :small_len]
+
+
+	'''
+	# debugging aid:  print out shapes of each of the features
+	print("   spectral_centroids len:", spectral_centroids.shape)
+	print("   spectral_rolloff len:", spectral_rolloff.shape)
+	print("   mfccs len:", mfccs.shape)
+	print("   chromagram len:", chromagram.shape)
+	print()
+	'''
+
+	# write the data
+	nextRow = np.hstack([genre_index, sumZeroCrossings, spectral_centroids,
 		                 np.hstack(spectral_rolloff), np.hstack(mfccs), np.hstack(chromagram)])
 	c.writerow(nextRow)
 
