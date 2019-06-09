@@ -13,7 +13,7 @@ genres = ['blues', 'classical', 'country', 'disco', 'hiphop', \
 
 
 GeneratePlots = False
-c = csv.writer(open("AllDataFeatures_trimmed.csv", "w"))
+c = csv.writer(open("AllDataFeatures_trimmed_11kHz.csv", "w"))
 
 
 # Normalizing the spectral centroid for visualisation
@@ -23,6 +23,7 @@ def normalize(x, axis=0):
 
 def GenerateCSVs(audio_path):
 	x, sr = librosa.load(audio_path)
+	x, sr = librosa.load(audio_path, sr=11000)
 
 	# get the genre name out of the audio path
 	a,genre_name,d = audio_path.split('/')
@@ -49,7 +50,7 @@ def GenerateCSVs(audio_path):
 
 	# trim all of the matrices to be a smaller length (to compensate for minor
 	# size differences)
-	small_len = 1285
+	small_len = 640			# 1285 for 22kHz
 
 	spectral_centroids = spectral_centroids[:small_len]
 	spectral_rolloff   = spectral_rolloff[:small_len]
@@ -57,14 +58,14 @@ def GenerateCSVs(audio_path):
 	chromagram 				 = chromagram[:, :small_len]
 
 
-	'''
-	# debugging aid:  print out shapes of each of the features
-	print("   spectral_centroids len:", spectral_centroids.shape)
-	print("   spectral_rolloff len:", spectral_rolloff.shape)
-	print("   mfccs len:", mfccs.shape)
-	print("   chromagram len:", chromagram.shape)
-	print()
-	'''
+	
+	# # debugging aid:  print out shapes of each of the features
+	# print("   spectral_centroids len:", spectral_centroids.shape)
+	# print("   spectral_rolloff len:", spectral_rolloff.shape)
+	# print("   mfccs len:", mfccs.shape)
+	# print("   chromagram len:", chromagram.shape)
+	# print()
+	
 
 	# write the data
 	nextRow = np.hstack([genre_index, sumZeroCrossings, spectral_centroids,
